@@ -23,7 +23,7 @@
 # production:
 #   <<: *default
 #   database: db/production.sqlite3
-development:
+production:
   adapter: postgresql
   encoding: utf8
   database: book123
