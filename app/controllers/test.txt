@@ -1,0 +1,68 @@
+class BooksController < ApplicationController
+  def index
+
+  end
+  def request_books
+    i = 0
+    request = "https://www.googleapis.com/books/v1/volumes?q="
+    batch_list = []
+    File.open("test.csv", "r").each_line do |line|
+      formatted_isbn = line.strip
+      existing = Book.find_by(isbn: formatted_isbn)
+      if existing
+        puts "skipping"
+      else
+        existing = Book.create!(isbn: formatted_isbn, read: false)
+      end
+      if (existing.read == false)
+        batch_list << formatted_isbn
+        if i < 85
+          request += "isbn:" + formatted_isbn + "+OR+"
+          i += 1
+        else
+          request += "isbn:" + formatted_isbn
+          i = 0
+          puts request
+          sleep 1
+          response = open(request).read
+          r_string = JSON.parse response
+          request = "https://www.googleapis.com/books/v1/volumes?q="
+          puts r_string
+          if r_string['totalItems'].to_f > 0
+            r_string['items'].each do |item|
+              title = item['volumeInfo']['title'] || ""
+              if item['volumeInfo'] && item['volumeInfo']['description']
+                description = item['volumeInfo']['description']
+              elsif item['searchInfo'] && item['searchInfo']['textSnippet']
+                description = item['searchInfo']['textSnippet']
+              else
+                description = ""
+              end
+              isbn_id = ""
+              author = item['volumeInfo']['authors'].join(', ') || ""
+              item['volumeInfo']['industryIdentifiers'].each do |ident|
+                if ident['type'] == "ISBN_13"
+                  Book.where(isbn: ident['identifier']).update(:title => title, :description => description, :author => author, read: true)
+                end
+              end
+            end
+          end
+          cur_book = Book.where(isbn: batch_list)
+          cur_book.update_all(read: true)
+        end
+      end
+    end
+  end
+
+  def check_books
+  end
+
+  def batch_books
+  end
+end
+
+
+9781359187253
+9781358213953
+
+9781359187246
