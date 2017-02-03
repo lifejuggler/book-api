@@ -72,7 +72,7 @@ class BooksController < ApplicationController
     })
     search_form = search_page.forms.first
     save_list = []
-    f = File.new("test.csv", 'r')
+    f = File.new("test" + ENV['ORDER_NUM'] + ".csv", 'r')
     f.each_line do |line|
       formatted_isbn = line.strip
       if Book.find_by(isbn: formatted_isbn)
@@ -106,16 +106,8 @@ class BooksController < ApplicationController
         end
         isbn_id = formatted_isbn
         if !b_title.blank?
-          puts "title"
-          puts b_title
-          puts " author"
-          puts author
-          puts "desc"
-          puts b_description
-          puts 'is'
-          puts isbn_id
+          save_list << Book.new(:title => b_title, :author => b_author, :isbn => isbn_id, read: true, :description => b_description)
         end
-        save_list << Book.new(:title => b_title, :author => b_author, :isbn => isbn_id, read: true, :description => b_description)
       end
       search_form = result_page.forms.first
       if save_list.length > 999
