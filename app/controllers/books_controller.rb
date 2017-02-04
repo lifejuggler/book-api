@@ -3,60 +3,7 @@ class BooksController < ApplicationController
 
   end
   def request_books
-    i = 0
-    request = "https://www.googleapis.com/books/v1/volumes?q="
-    batch_list = []
-    save_list = []
-    File.open("test.csv", "r").each_line do |line|
-      formatted_isbn = line.strip
-      batch_list << formatted_isbn
-      if i < 85
-        request += "isbn:" + formatted_isbn + "+OR+"
-        i += 1
-      else
-        request += "isbn:" + formatted_isbn
-        i = 0
-        puts request
-        sleep 5
-        response = open(request).read
-        r_string = JSON.parse response
-        request = "https://www.googleapis.com/books/v1/volumes?q="
-        puts r_string
-        if r_string['totalItems'].to_f > 0
-          r_string['items'].each do |item|
-            if item['volumeInfo'] && item['volumeInfo']['title']
-              title = item['volumeInfo']['title']
-            else
-              title = ""
-            end
-            if item['volumeInfo'] && item['volumeInfo']['description']
-              description = item['volumeInfo']['description']
-            elsif item['searchInfo'] && item['searchInfo']['textSnippet']
-              description = item['searchInfo']['textSnippet']
-            else
-              description = ""
-            end
-            if item['volumeInfo'] && item['volumeInfo']['authors']
-              author = item['volumeInfo']['authors'].join(', ')
-            else
-              author = ""
-            end
-            if item['volumeInfo'] && item['volumeInfo']['industryIdentifiers']
-              item['volumeInfo']['industryIdentifiers'].each do |ident|
-                if ident['type'] == "ISBN_13"
-                  save_list << Book.new(isbn: ident['identifier'], :title => title, :description => description, :author => author, read: true)
-                end
-              end
-            end
-          end
-        end
-        sleep 4
-        if save_list.length > 100
-          Book.import save_list
-          save_list = []
-        end
-      end
-    end
+    HardWorker.perform_async()
   end
 
   def check_books
@@ -70,20 +17,46 @@ class BooksController < ApplicationController
       username:'msolomich',
       passwd:'tYXGxvp4'
     })
+
     search_form = search_page.forms.first
     save_list = []
-    f = File.new("test" + ENV['ORDER_NUM'] + ".csv", 'r')
+    # isbn_list = []
+    i = 0
+    f = File.new("test" + ENV["ORDER_NUM"] + ".csv", 'r')
     f.each_line do |line|
+      buff_sleep = rand(1..5)
       formatted_isbn = line.strip
+      puts formatted_isbn
+      sleep(buff_sleep)
       if Book.find_by(isbn: formatted_isbn)
-        f.seek(-line.length, IO::SEEK_CUR)
-        # overwrite line with spaces and add a newline char
-        f.write('a' * (line.length - 1))
-        f.write("\n")
+        # f.seek(-line.length, IO::SEEK_CUR)
+        # # overwrite line with spaces and add a newline char
+        # f.write('a' * (line.length - 1))
+        # f.write("\n")
       else
         search_form.searchTerm = formatted_isbn
-        result_page = agent.submit(search_form)
-        result_form = result_page.forms.second
+        begin
+          result_page = agent.submit(search_form)
+        rescue Exception=>e
+          fail_sleep = rand(10..25)
+          puts 'sleeping for ' +  fail_sleep.to_s + 'sec cause I failed'
+          sleep(fail_sleep)
+          agent = Mechanize.new
+
+          login_form = agent.get("https://ipage.ingramcontent.com/ipage/li001.jsp").form('login')
+          search_page = agent.post('https://ipage.ingramcontent.com/ipage/administration/login.action', {
+            token:login_form['token'],
+            gotoPage:'',
+            allow: 'Y',
+            username:'msolomich',
+            passwd:'tYXGxvp4'
+          })
+
+          search_form = search_page.forms.first
+          search_form.searchTerm = formatted_isbn
+          retry
+        end
+        result_form = result_page.form_with(:name => 'DetailEmail')
         if result_form['title']
           b_title = result_form['title']
         else
@@ -100,16 +73,23 @@ class BooksController < ApplicationController
           b_author << result_form['ctbr3']
         end
         author = b_author.join(";")
-        b_description = ""
-        if result_form['narrativeDescription']
+        if !result_form['narrativeDescription'].strip.blank?
           b_description = result_form['narrativeDescription']
+        elsif !result_form['ingramDescription'].strip.blank?
+          b_description = result_form['ingramDescription']
+        else
+          b_description = ""
         end
         isbn_id = formatted_isbn
         if !b_title.blank?
-          save_list << Book.new(:title => b_title, :author => b_author, :isbn => isbn_id, read: true, :description => b_description)
+          save_list << Book.new(:title => b_title, :author => author, :isbn => isbn_id, read: true, :description => b_description)
         end
       end
-      search_form = result_page.forms.first
+      if result_page
+        search_form = result_page.form_with(:name => 'searchForm')
+      end
+      i = i + 1
+      puts i
       if save_list.length > 999
         Book.import save_list
         save_list = []
