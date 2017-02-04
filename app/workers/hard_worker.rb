@@ -17,7 +17,7 @@ class HardWorker
     save_list = []
     # isbn_list = []
     i = 0
-    f = File.new("test" + ENV[ORDER_NUM] + ".csv", 'r')
+    f = File.new("test" + ENV['ORDER_NUM'] + ".csv", 'r')
     f.each_line do |line|
       buff_sleep = rand(1..2)
       formatted_isbn = line.strip

@@ -53,13 +53,12 @@ GEM
     concurrent-ruby (1.0.4)
     connection_pool (2.2.1)
     debug_inspector (0.0.2)
-    delayed_job (4.1.2)
-      activesupport (>= 3.0, < 5.1)
-    delayed_job_active_record (4.1.1)
-      activerecord (>= 3.0, < 5.1)
-      delayed_job (>= 3.0, < 5)
     domain_name (0.5.20161129)
       unf (>= 0.0.5, < 1.0.0)
+    dotenv (2.2.0)
+    dotenv-rails (2.2.0)
+      dotenv (= 2.2.0)
+      railties (>= 3.2, < 5.1)
     erubis (2.7.0)
     execjs (2.7.0)
     ffi (1.9.17)
@@ -193,7 +192,7 @@ DEPENDENCIES
   activerecord-import
   byebug
   coffee-rails (~> 4.2)
-  delayed_job_active_record
+  dotenv-rails
   jbuilder (~> 2.5)
   jquery-rails
   listen (~> 3.0.5)
