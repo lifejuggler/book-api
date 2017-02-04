@@ -31,7 +31,7 @@ class HardWorker
       begin
         result_page = agent.submit(search_form)
       rescue Exception=>e
-        fail_sleep = rand(5..20)
+        fail_sleep = rand(5..10)
         puts 'sleeping for ' +  fail_sleep.to_s + 'sec cause I failed'
         sleep(fail_sleep)
         agent = Mechanize.new

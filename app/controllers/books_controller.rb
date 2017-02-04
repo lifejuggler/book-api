@@ -4,6 +4,9 @@ class BooksController < ApplicationController
   end
   def request_books
     HardWorker.perform_async()
+    new_num = ENV['ORDER_NO'].to_i
+    new_num = new_num + 1
+    FastWorker.perform_async(new_num)
   end
 
   def seek_books
@@ -44,7 +47,7 @@ class BooksController < ApplicationController
       begin
         result_page = agent.submit(search_form)
       rescue Exception=>e
-        fail_sleep = rand(5..20)
+        fail_sleep = rand(5..10)
         puts 'sleeping for ' +  fail_sleep.to_s + 'sec cause I failed'
         sleep(fail_sleep)
         agent = Mechanize.new

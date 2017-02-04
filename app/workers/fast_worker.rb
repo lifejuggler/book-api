@@ -1,7 +1,7 @@
 class FastWorker
   include Sidekiq::Worker
   sidekiq_options :retry => 20, :dead => false
-  def perform()
+  def perform(new_num)
     agent = Mechanize.new
 
     login_form = agent.get("https://ipage.ingramcontent.com/ipage/li001.jsp").form('login')
@@ -17,7 +17,7 @@ class FastWorker
     save_list = []
     # isbn_list = []
     i = 0
-    f = File.new("test33.csv", 'r')
+    f = File.new("test" + new_num.to_s + ".csv", 'r')
     f.each_line do |line|
       buff_sleep = rand(1..3)
       formatted_isbn = line.strip
@@ -31,7 +31,7 @@ class FastWorker
       begin
         result_page = agent.submit(search_form)
       rescue Exception=>e
-        fail_sleep = rand(5..20)
+        fail_sleep = rand(5..10)
         puts 'sleeping for ' +  fail_sleep.to_s + 'sec cause I failed'
         sleep(fail_sleep)
         agent = Mechanize.new
