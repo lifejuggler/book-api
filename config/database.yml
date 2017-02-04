@@ -38,3 +38,19 @@ production:
   password: <%= ENV['RDS_PASSWORD'] %>
   host: <%= ENV['RDS_HOSTNAME'] %>
   port: 5432
+
+#   production:
+#   adapter: postgresql
+#   encoding: unicode
+#   database: books_dev
+#   pool: 5
+#   username: postgres
+#   password:
+# development:
+#   adapter: postgresql
+#   encoding: utf8
+#   database: book123
+#   username: postgres
+#   password: postgres
+#   host: bookdb.c4czrw0ydnuf.us-west-2.rds.amazonaws.com
+#   port: 5432

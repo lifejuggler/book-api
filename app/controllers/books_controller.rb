@@ -3,10 +3,13 @@ class BooksController < ApplicationController
 
   end
   def request_books
-    HardWorker.perform_async()
-    new_num = ENV['ORDER_NO'].to_i
-    new_num = new_num + 1
-    FastWorker.perform_async(new_num)
+    i = 1
+    # assigned_num = ENV['ORDER_NUM'].to_i
+    while i < 9
+      EnhancedWorker.perform_async(i)
+      i = i + 1
+      # assigned_num = assigned_num
+    end
   end
 
   def seek_books
@@ -112,25 +115,43 @@ class BooksController < ApplicationController
     # Book.where(batch: true).update_all(batch: false)
     # while i <= 34 do
 
-    File.delete('batch.txt') if File.exist?('batch.txt')
-    batch = Book.where(batch: false).limit(250000)
-    File.open("batch.txt", 'a+'){|f| f <<"title\tauthor\tdescription\tisbn\n"}
-    batch.each do |b|
-      if !b.author
-        author = "none"
-      else
-        author = b.author
-      end
-      if !b.description
-        desc = "none"
-      else
-        desc = b.description
-      end
-      File.open("batch.txt", 'a+'){|f| f << b.title + "\t" + author + "\t" + desc + "\t" + b.isbn + "\n"}
-    end
-    batch.update_all(batch: true)
-    send_file 'batch.txt', :type=>"application/text", :x_sendfile=>true
+    # File.delete('isbn13.txt') if File.exist?('batch.txt')
+    # batch = Book.where(batch: false).limit(250000)
+    # File.open("batch.txt", 'a+'){|f| f <<"title\tauthor\tdescription\tisbn\n"}
+    # batch.each do |b|
+    #   if !b.author
+    #     author = "none"
+    #   else
+    #     author = b.author
+    #   end
+    #   if !b.description
+    #     desc = "none"
+    #   else
+    #     desc = b.description
+    #   end
+    #   File.open("batch.txt", 'a+'){|f| f << b.title + "\t" + author + "\t" + desc + "\t" + b.isbn + "\n"}
+    # end
+    # batch.update_all(batch: true)
+    # send_file 'batch.txt', :type=>"application/text", :x_sendfile=>true
       # i += 1
     # end
+    i = 1
+    j = 1
+    k = 1
+    Dir.mkdir('f1')
+    f = File.new("isbn13.csv", 'r')
+    f.each_line do |line|
+      File.open("f" + i.to_s + "/sub" + j.to_s + ".csv", 'a+'){|f| f << line}
+      if k == 100001
+        j = j + 1
+        k = 1
+      end
+      if j == 9
+        j = 1
+        i = i + 1
+        Dir.mkdir('f' + i.to_s)
+      end
+      k = k + 1
+    end
   end
 end
