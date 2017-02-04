@@ -1,20 +1,7 @@
-class BooksController < ApplicationController
-  def index
-
-  end
-  def request_books
-    HardWorker.perform_async()
-  end
-
-  def seek_books
-    FastWorker.perform_async()
-  end
-
-  def blow_books
-    LastWorker.perform_async()
-  end
-
-  def check_books
+class LastWorker
+  include Sidekiq::Worker
+  sidekiq_options :retry => 20, :dead => false
+  def perform()
     agent = Mechanize.new
 
     login_form = agent.get("https://ipage.ingramcontent.com/ipage/li001.jsp").form('login')
@@ -30,9 +17,9 @@ class BooksController < ApplicationController
     save_list = []
     # isbn_list = []
     i = 0
-    f = File.new("test3.csv", 'r')
+    f = File.new("test" + ENV['ORDER_NO'] + ".csv", 'r')
     f.each_line do |line|
-      buff_sleep = rand(1..2)
+      buff_sleep = rand(1..4)
       formatted_isbn = line.strip
       puts formatted_isbn
       sleep(buff_sleep)
@@ -102,32 +89,5 @@ class BooksController < ApplicationController
         save_list = []
       end
     end
-  end
-
-  def batch_books
-    # i = 27
-    # Book.where(batch: true).update_all(batch: false)
-    # while i <= 34 do
-
-    File.delete('batch.txt') if File.exist?('batch.txt')
-    batch = Book.where(batch: false).limit(250000)
-    File.open("batch.txt", 'a+'){|f| f <<"title\tauthor\tdescription\tisbn\n"}
-    batch.each do |b|
-      if !b.author
-        author = "none"
-      else
-        author = b.author
-      end
-      if !b.description
-        desc = "none"
-      else
-        desc = b.description
-      end
-      File.open("batch.txt", 'a+'){|f| f << b.title + "\t" + author + "\t" + desc + "\t" + b.isbn + "\n"}
-    end
-    batch.update_all(batch: true)
-    send_file 'batch.txt', :type=>"application/text", :x_sendfile=>true
-      # i += 1
-    # end
   end
 end
