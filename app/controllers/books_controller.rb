@@ -22,41 +22,40 @@ class BooksController < ApplicationController
     save_list = []
     # isbn_list = []
     i = 0
-    f = File.new("test" + ENV["ORDER_NUM"] + ".csv", 'r')
+    f = File.new("test3.csv", 'r')
     f.each_line do |line|
-      buff_sleep = rand(1..5)
+      buff_sleep = rand(1..2)
       formatted_isbn = line.strip
       puts formatted_isbn
       sleep(buff_sleep)
-      if Book.find_by(isbn: formatted_isbn)
         # f.seek(-line.length, IO::SEEK_CUR)
         # # overwrite line with spaces and add a newline char
         # f.write('a' * (line.length - 1))
         # f.write("\n")
-      else
+      search_form.searchTerm = formatted_isbn
+      begin
+        result_page = agent.submit(search_form)
+      rescue Exception=>e
+        fail_sleep = rand(5..20)
+        puts 'sleeping for ' +  fail_sleep.to_s + 'sec cause I failed'
+        sleep(fail_sleep)
+        agent = Mechanize.new
+
+        login_form = agent.get("https://ipage.ingramcontent.com/ipage/li001.jsp").form('login')
+        search_page = agent.post('https://ipage.ingramcontent.com/ipage/administration/login.action', {
+          token:login_form['token'],
+          gotoPage:'',
+          allow: 'Y',
+          username:'msolomich',
+          passwd:'tYXGxvp4'
+        })
+
+        search_form = search_page.forms.first
         search_form.searchTerm = formatted_isbn
-        begin
-          result_page = agent.submit(search_form)
-        rescue Exception=>e
-          fail_sleep = rand(10..25)
-          puts 'sleeping for ' +  fail_sleep.to_s + 'sec cause I failed'
-          sleep(fail_sleep)
-          agent = Mechanize.new
-
-          login_form = agent.get("https://ipage.ingramcontent.com/ipage/li001.jsp").form('login')
-          search_page = agent.post('https://ipage.ingramcontent.com/ipage/administration/login.action', {
-            token:login_form['token'],
-            gotoPage:'',
-            allow: 'Y',
-            username:'msolomich',
-            passwd:'tYXGxvp4'
-          })
-
-          search_form = search_page.forms.first
-          search_form.searchTerm = formatted_isbn
-          retry
-        end
-        result_form = result_page.form_with(:name => 'DetailEmail')
+        retry
+      end
+      result_form = result_page.form_with(:name => 'DetailEmail')
+      if result_form
         if result_form['title']
           b_title = result_form['title']
         else
@@ -90,7 +89,7 @@ class BooksController < ApplicationController
       end
       i = i + 1
       puts i
-      if save_list.length > 999
+      if save_list.length > 199
         Book.import save_list
         save_list = []
       end
