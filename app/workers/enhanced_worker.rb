@@ -21,7 +21,7 @@ class EnhancedWorker
     f.each_line do |line|
       buff_sleep = rand(1..4)
       formatted_isbn = line.strip
-      if Books.find_by(isbn: formatted_isbn)
+      if Book.find_by(isbn: formatted_isbn)
         puts "exist"
       else
         puts formatted_isbn
