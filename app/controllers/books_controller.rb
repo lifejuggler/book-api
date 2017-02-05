@@ -5,19 +5,11 @@ class BooksController < ApplicationController
   def request_books
     i = 1
     # assigned_num = ENV['ORDER_NUM'].to_i
-    while i < 9
-      EnhancedWorker.perform_async(i)
+    while i < 6
+      LastWorker.perform_async(i)
       i = i + 1
       # assigned_num = assigned_num
     end
-  end
-
-  def seek_books
-    FastWorker.perform_async()
-  end
-
-  def blow_books
-    LastWorker.perform_async()
   end
 
   def check_books
@@ -146,7 +138,7 @@ class BooksController < ApplicationController
         j = j + 1
         k = 1
       end
-      if j == 9
+      if j == 6
         j = 1
         i = i + 1
         Dir.mkdir('f' + i.to_s)
