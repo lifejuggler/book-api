@@ -1,7 +1,7 @@
 class EnhancedWorker
   include Sidekiq::Worker
   sidekiq_options :retry => 20, :dead => false
-  def perform(id)
+  def perform(file_num)
     agent = Mechanize.new
 
     login_form = agent.get("https://ipage.ingramcontent.com/ipage/li001.jsp").form('login')
