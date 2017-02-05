@@ -1,7 +1,7 @@
 class EnhancedWorker
   include Sidekiq::Worker
   sidekiq_options :retry => 20, :dead => false
-  def perform(file_num)
+  def perform(id)
     agent = Mechanize.new
 
     login_form = agent.get("https://ipage.ingramcontent.com/ipage/li001.jsp").form('login')
@@ -17,7 +17,7 @@ class EnhancedWorker
     save_list = []
     # isbn_list = []
     i = 0
-    f = File.new("f33/sub" + file_num.to_s + ".csv", 'r')
+    f = File.new("f" + ENV['ORDER_NUM'] + "/sub" + file_num.to_s + ".csv", 'r')
     f.each_line do |line|
       buff_sleep = rand(1..4)
       formatted_isbn = line.strip
