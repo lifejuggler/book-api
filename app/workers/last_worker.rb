@@ -1,6 +1,6 @@
 class LastWorker
   include Sidekiq::Worker
   sidekiq_options :retry => 20, :dead => false
-  def perform()
+  def perform(file_num)
   end
 end
