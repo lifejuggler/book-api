@@ -39,7 +39,6 @@ production:
   password: postgres
   host: bookdb.c4czrw0ydnuf.us-west-2.rds.amazonaws.com
   port: 5432
-  pool: 210
 
 #   production:
 #   adapter: postgresql
