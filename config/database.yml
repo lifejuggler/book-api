@@ -25,19 +25,21 @@
 #   database: db/production.sqlite3
 development:
   adapter: postgresql
-  encoding: unicode
-  database: books_dev
-  pool: 5
+  encoding: utf8
+  database: book123
   username: postgres
-  password:
+  password: postgres
+  host: bookdb.c4czrw0ydnuf.us-west-2.rds.amazonaws.com
+  port: 5432
 production:
   adapter: postgresql
   encoding: utf8
   database: book123
-  username: <%= ENV['RDS_USERNAME'] %>
-  password: <%= ENV['RDS_PASSWORD'] %>
-  host: <%= ENV['RDS_HOSTNAME'] %>
+  username: postgres
+  password: postgres
+  host: bookdb.c4czrw0ydnuf.us-west-2.rds.amazonaws.com
   port: 5432
+  pool: 210
 
 #   production:
 #   adapter: postgresql

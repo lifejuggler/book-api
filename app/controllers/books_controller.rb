@@ -5,8 +5,8 @@ class BooksController < ApplicationController
   def request_books
     i = 1
     # assigned_num = ENV['ORDER_NUM'].to_i
-    while i < 5
-      UpdatedWorker.perform_async(i)
+    while i < 201
+      LastWorker.perform_async(i)
       i = i + 1
       # assigned_num = assigned_num
     end
@@ -95,7 +95,7 @@ class BooksController < ApplicationController
       end
       i = i + 1
       puts i
-      if save_list.length > 99
+      if save_list.length > 199
         Book.import save_list
         save_list = []
       end
@@ -136,22 +136,12 @@ class BooksController < ApplicationController
     Dir.mkdir('f1')
     f = File.new("isbn13.csv", 'r')
     f.each_line do |line|
-      formatted_isbn = line.strip
-      if Book.find_by(isbn: formatted_isbn)
-        puts "exist"
-      else
-        File.open("f" + i.to_s + "/sub" + j.to_s + ".csv", 'a+'){|f| f << line}
-        if k == 200001
-          j = j + 1
-          k = 1
-        end
-        if j == 5
-          j = 1
-          i = i + 1
-          Dir.mkdir('f' + i.to_s)
-        end
-        k = k + 1
+      File.open("f1/sub" + j.to_s + ".csv", 'a+'){|f| f << line}
+      if k == 80001
+        j = j + 1
+        k = 1
       end
+      k = k + 1
     end
   end
 end
