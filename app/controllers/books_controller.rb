@@ -6,7 +6,7 @@ class BooksController < ApplicationController
     i = 1
     # assigned_num = ENV['ORDER_NUM'].to_i
     while i < 201
-      LastWorker.perform_async(i)
+      UpdatedWorker.perform_async(i)
       i = i + 1
       # assigned_num = assigned_num
     end
